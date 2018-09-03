@@ -6,8 +6,8 @@
         "yunohost": ">= 3.0"
     },
     "description": {
-        "en": "Create a webapp with your own path on the system",
-        "fr": "Créer une webapp avec votre propre dossier sur le système"
+        "en": "Create a redirection or a proxy to another path.",
+        "fr": "Créer une redirection ou un proxy vers un autre emplacement"
     },
     "maintainer": {
         "name": "Gildas GH",
@@ -44,8 +44,8 @@
                     "en": "Redirect destination path",
                     "fr": "Emplacement de destination"
                 },
-                "example": "/var/your/own/path",
-                "default": "/var/www/"
+                "example": "/var/your/own/path, http://127.0.0.1:8080/app/",
+                "default": "http://127.0.0.1/"
             },
             {
                 "name": "is_public",
@@ -55,7 +55,20 @@
                     "fr": "Est-ce une redirection publique ?"
                 },
                 "default": false
-            }
+            },
+            {
+                "name": "redirect_type",
+                "ask": {
+                    "en": "Redirect type",
+                    "fr": "Type de redirection"
+                },
+                "choices": {
+                  "visible_302" : "Visible (302 redirect)",
+                  "visible_301" : "Visible (301 redirect)",
+                  "proxy": "Proxy, invisible (Nginx proxy_pass)",
+                  "system_path": "To a system folder"
+                },
+                "default": "visible_302"
         ]
     }
 }
