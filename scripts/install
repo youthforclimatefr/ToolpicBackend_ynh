@@ -35,9 +35,9 @@ sudo yunohost app checkurl $domain$path -a $app \
     || (echo "Path not available: $domain$path" && exit 1)
 
 # Validate redirect path
-url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
-[[ ! $redirect_path =~ $url_regex ]] && ynh_die \
-"Invalid destination: $redirect_path" 1
+#url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+#[[ ! $redirect_path =~ $url_regex ]] && ynh_die \
+#"Invalid destination: $redirect_path" 1
 
 # Save extra settings
 sudo yunohost app setting $app is_public -v "$is_public"
@@ -58,6 +58,9 @@ elif [ "$redirect_type" = "proxy" ];
 then
     sed -i "s@YNH_REDIRECT_PATH@$redirect_path@g" ../conf/nginx-proxy.conf
     sudo cp ../conf/nginx-proxy.conf /etc/nginx/conf.d/$domain.d/$app.conf
+elif [ "$redirect_type" = "system_path" ];
+    sed -i "s@YNH_REDIRECT_PATH@$redirect_path@g" ../conf/nginx-custom-path.conf
+    sudo cp ../conf/nginx-custom-path.conf /etc/nginx/conf.d/$domain.d/$app.conf
 fi
 
 # Make app public if necessary
