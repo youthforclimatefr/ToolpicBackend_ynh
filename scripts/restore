@@ -33,9 +33,9 @@ sudo yunohost app checkurl $domain$path -a $app \
   || die "The path ${domain}${path} is not available for app installation."
 
 # Validate redirect path
-url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
-[[ ! $redirect_path =~ $url_regex ]] && ynh_die \
-"Invalid destination: $redirect_path" 1
+#url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+#[[ ! $redirect_path =~ $url_regex ]] && ynh_die \
+#"Invalid destination: $redirect_path" 1
 
 # Check configuration files
 NGINX_CONF="/etc/nginx/conf.d/${domain}.d/${app}.conf"
