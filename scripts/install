@@ -65,7 +65,7 @@ then
 elif [ "$redirect_type" = "uwsgi" ];
 then
     sed -i "s@YNH_REDIRECT_PATH@$redirect_path@g" ../conf/nginx-uwsgi.conf
-    sudo cp ../conf/uwsgi.conf /etc/nginx/conf.d/$domain.d/$app.conf
+    sudo cp ../conf/nginx-uwsgi.conf /etc/nginx/conf.d/$domain.d/$app.conf
 fi
 
 # Make app public if necessary
