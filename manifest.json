@@ -66,7 +66,8 @@
                   "visible_302" : "Visible (302 redirect)",
                   "visible_301" : "Visible (301 redirect)",
                   "proxy": "Proxy, invisible (Nginx proxy_pass)",
-                  "system_path": "To a system folder"
+                  "system_path": "To a system folder",
+                  "uwsgi": "Using a uWSGI socket"
                 },
                 "default": "visible_302"
             }
