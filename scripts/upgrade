@@ -42,9 +42,9 @@ sudo yunohost app checkurl $domain$path -a $app \
     || (echo "Path not available: $domain$path" && exit 1)
 
 # Validate redirect path
-url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
-[[ ! $redirect_path =~ $url_regex ]] && ynh_die \
-"Invalid destination: $redirect_path" 1
+# url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+# [[ ! $redirect_path =~ $url_regex ]] && ynh_die \
+# "Invalid destination: $redirect_path" 1
 
 # Nginx configuration
 sed -i "s@YNH_LOCATION@$location@g" ../conf/nginx-*.conf
