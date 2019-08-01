@@ -1,61 +1,62 @@
 #!/bin/bash
 
-# causes the shell to exit if any subcommand or pipeline returns a non-zero status
-set -ue
+#=================================================
+# GENERIC START
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
-# Source app helpers
-. /usr/share/yunohost/helpers
+source /usr/share/yunohost/helpers
 
-# This is a multi-instance app, meaning it can be installed several times independently
-# The id of the app as stated in the manifest is available as $YNH_APP_ID
-# The instance number is available as $YNH_APP_INSTANCE_NUMBER (equals "1", "2", ...)
-# The app instance name is available as $YNH_APP_INSTANCE_NAME
-#    - the first time the app is installed, YNH_APP_INSTANCE_NAME = ynhexample
-#    - the second time the app is installed, YNH_APP_INSTANCE_NAME = ynhexample__2
-#    - ynhexample__{N} for the subsequent installations, with N=3,4, ...
-# The app instance name is probably what you are interested the most, since this is
-# guaranteed to be unique. This is a good unique identifier to define installation path,
-# db names, ...
-app=$YNH_APP_INSTANCE_NAME
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# RETRIEVE ARGUMENTS FROM THE MANIFEST
+#=================================================
 
 # Retrieve arguments
+app=$YNH_APP_INSTANCE_NAME
 domain=$YNH_APP_ARG_DOMAIN
-path=$YNH_APP_ARG_PATH
-is_public=$YNH_APP_ARG_IS_PUBLIC
+path_url=$YNH_APP_ARG_PATH
 redirect_type=$YNH_APP_ARG_REDIRECT_TYPE
 redirect_path=$YNH_APP_ARG_REDIRECT_PATH
 
-# Remove trailing slash to path
-path=${path%/}
-#force location to be / or /foo
-location=${path:-/}
-
 # Check domain/path availability
-sudo yunohost app checkurl $domain$path -a $app \
-    || (echo "Path not available: $domain$path" && exit 1)
+ynh_webpath_register $app $domain $path_url
 
 # Validate redirect path
-#url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
-#[[ ! $redirect_path =~ $url_regex ]] && ynh_die \
-#"Invalid destination: $redirect_path" 1
+# url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+# [[ ! $redirect_path =~ $url_regex ]] && ynh_die "Invalid destination: $redirect_path" 1
 
 # Save extra settings
-sudo yunohost app setting $app is_public -v "$is_public"
-sudo yunohost app setting $app redirect_type -v "$redirect_type"
-sudo yunohost app setting $app redirect_path -v "$redirect_path"
+ynh_app_setting_set $app redirect_type "$redirect_type"
+ynh_app_setting_set $app redirect_path "$redirect_path"
+
+#=================================================
+# CONFIGURE NGINX
+#=================================================
 
 # Nginx configuration
-sed -i "s@YNH_LOCATION@$location@g" ../conf/nginx-*.conf
-if [ "$redirect_type" = "visible_302" ];
+for FILE in $(ls ../conf/nginx-*.conf)
+do
+    ynh_replace_string "YNH_LOCATION" "$path_url" $FILE
+done
+if [ "$redirect_type" = "public_302" ];
 then
-    sed -i "s@YNH_REDIRECT_PATH@$redirect_path@g" ../conf/nginx-visible-302.conf
-    sudo cp ../conf/nginx-visible-302.conf /etc/nginx/conf.d/$domain.d/$app.conf
-elif [ "$redirect_type" = "visible_301" ];
+    ynh_replace_string "YNH_REDIRECT_PATH" "$redirect_path" ../conf/nginx-visible-302.conf
+    cp ../conf/nginx-visible-302.conf /etc/nginx/conf.d/$domain.d/$app.conf
+elif [ "$redirect_type" = "public_301" ];
 then
-    sed -i "s@YNH_REDIRECT_PATH@$redirect_path@g" ../conf/nginx-visible-301.conf
-    sudo cp ../conf/nginx-visible-301.conf /etc/nginx/conf.d/$domain.d/$app.conf
-elif [ "$redirect_type" = "proxy" ];
+    ynh_replace_string "YNH_REDIRECT_PATH" "$redirect_path" ../conf/nginx-visible-301.conf
+    cp ../conf/nginx-visible-301.conf /etc/nginx/conf.d/$domain.d/$app.conf
+elif [ "$redirect_type" = "public_proxy" ] || [ "$redirect_type" = "private_proxy" ];
 then
+<<<<<<< HEAD
     sed -i "s@YNH_REDIRECT_PATH@$redirect_path@g" ../conf/nginx-proxy.conf
     sudo cp ../conf/nginx-proxy.conf /etc/nginx/conf.d/$domain.d/$app.conf
 elif [ "$redirect_type" = "system_path" ];
@@ -66,14 +67,22 @@ elif [ "$redirect_type" = "uwsgi" ];
 then
     sed -i "s@YNH_REDIRECT_PATH@$redirect_path@g" ../conf/nginx-uwsgi.conf
     sudo cp ../conf/nginx-uwsgi.conf /etc/nginx/conf.d/$domain.d/$app.conf
+=======
+    ynh_replace_string "YNH_REDIRECT_PATH" "$redirect_path" ../conf/nginx-proxy.conf
+    cp ../conf/nginx-proxy.conf /etc/nginx/conf.d/$domain.d/$app.conf
+>>>>>>> c39fadf7eace11abe92072fef6a4586f0b058ca1
 fi
 
+#=================================================
+# CONFIGURE SSOWAT
+#=================================================
+
 # Make app public if necessary
-if [[ "$is_public" -ne 0 ]];
+if [ "$redirect_type" != "private_proxy" ]
 then
-    sudo yunohost app setting $app unprotected_uris -v "/"
+	# unprotected_uris allows SSO credentials to be passed anyway.
+	ynh_app_setting_set "$app" unprotected_uris "/"
 fi
 
 # Reload Nginx and regenerate SSOwat conf
-sudo service nginx reload
-sudo yunohost app ssowatconf
+systemctl reload nginx

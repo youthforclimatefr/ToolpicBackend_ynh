@@ -9,11 +9,14 @@
         "en": "Create a redirection or a proxy to another path.",
         "fr": "Créer une redirection ou un proxy vers un autre emplacement"
     },
+    "version": "1.0.0~ynh4",
+    "license": "AGPL-3.0-or-later",
+    "url": "https://github.com/YunoHost-Apps/redirect_ynh",
     "maintainer": {
         "name": "Gildas GH",
         "email": "gildas@becauseofprog.fr"
     },
-    "multi_instance": "true",
+    "multi_instance": true,
     "services": [
         "nginx"
     ],
@@ -40,6 +43,7 @@
             },
             {
                 "name": "redirect_path",
+                "type": "string",
                 "ask": {
                     "en": "Redirect destination path",
                     "fr": "Emplacement de destination"
@@ -48,28 +52,20 @@
                 "default": "http://127.0.0.1/"
             },
             {
-                "name": "is_public",
-                "type": "boolean",
-                "ask": {
-                    "en": "Is it a public redirect ?",
-                    "fr": "Est-ce une redirection publique ?"
-                },
-                "default": false
-            },
-            {
                 "name": "redirect_type",
                 "ask": {
                     "en": "Redirect type",
                     "fr": "Type de redirection"
                 },
                 "choices": {
-                  "visible_302" : "Visible (302 redirect)",
-                  "visible_301" : "Visible (301 redirect)",
-                  "proxy": "Proxy, invisible (Nginx proxy_pass)",
+                  "public_302" : "Visible redirect (302, temporary). Everybody will be able to access it.",
+                  "public_301" : "Visible redirect (301, permanent). Everybody will be able to access it.",
+                  "public_proxy": "Proxy, invisible (nginx proxy_pass). Everybody will be able to access it.",
+                  "private_proxy": "Proxy, invisible (nginx proxy_pass). Only accessible for allowed users.",
                   "system_path": "To a system folder",
                   "uwsgi": "Using a uWSGI socket"
                 },
-                "default": "visible_302"
+                "default": "public_302"
             }
         ]
     }
