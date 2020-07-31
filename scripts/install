@@ -55,6 +55,8 @@ ynh_system_user_create --username=$app
 # Set write access
 chown -R $app: "$final_path"
 
+cd "$final_path" && exec_as "$app" npm i
+
 #=================================================
 # CONFIGURE NGINX
 #=================================================

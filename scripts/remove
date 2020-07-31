@@ -18,6 +18,8 @@ domain=$(ynh_app_setting_get $app domain)
 
 # Remove configuration files
 ynh_secure_remove /etc/nginx/conf.d/$domain.d/$app.conf
+ynh_secure_remove /etc/systemd/system/$app.service
+ynh_secure_remove /var/www/$app
 
 # Restart services
 systemctl reload nginx
