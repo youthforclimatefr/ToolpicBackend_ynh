@@ -1,22 +1,22 @@
 {
-    "name": "Real custom webapp",
-    "id": "realcustomwebapp",
+    "name": "ToolpicBackend",
+    "id": "ToolpicBackend",
     "packaging_format": 1,
     "requirements": {
         "yunohost": ">= 3.0"
     },
     "description": {
-        "en": "Create a redirection or a proxy to another path.",
-        "fr": "Créer une redirection ou un proxy vers un autre emplacement"
+        "en": "Install the Toolpic Backend API on your YunoHost server.",
+        "fr": "Installer le Backend de Toolpic sur votre propre instance YunoHost."
     },
     "version": "1.0.0~ynh4",
     "license": "AGPL-3.0-or-later",
-    "url": "https://github.com/YunoHost-Apps/redirect_ynh",
+    "url": "https://github.com/youthforclimatefr/ToolpicBackend_ynh",
     "maintainer": {
         "name": "Gildas GH",
         "email": "gildas@becauseofprog.fr"
     },
-    "multi_instance": true,
+    "multi_instance": false,
     "services": [
         "nginx"
     ],
@@ -40,32 +40,6 @@
                 },
                 "example": "/redirect",
                 "default": "/redirect"
-            },
-            {
-                "name": "redirect_path",
-                "type": "string",
-                "ask": {
-                    "en": "Redirect destination path",
-                    "fr": "Emplacement de destination"
-                },
-                "example": "/var/your/own/path, http://127.0.0.1:8080/app/",
-                "default": "http://127.0.0.1/"
-            },
-            {
-                "name": "redirect_type",
-                "ask": {
-                    "en": "Redirect type",
-                    "fr": "Type de redirection"
-                },
-                "choices": {
-                  "public_302" : "Visible redirect (302, temporary). Everybody will be able to access it.",
-                  "public_301" : "Visible redirect (301, permanent). Everybody will be able to access it.",
-                  "public_proxy": "Proxy, invisible (nginx proxy_pass). Everybody will be able to access it.",
-                  "private_proxy": "Proxy, invisible (nginx proxy_pass). Only accessible for allowed users.",
-                  "system_path": "To a system folder",
-                  "uwsgi": "Using a uWSGI socket"
-                },
-                "default": "public_302"
             }
         ]
     }

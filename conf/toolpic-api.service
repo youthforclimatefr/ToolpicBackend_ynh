@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Toolpic API in background. (Fridays For Future Germany / Youth For Climate France)
+After=network.target
+
+[Service]
+User=YNH_USER
+Group=YNH_USER
+WorkingDirectory=YNH_LOCATION
+ExecStart=/usr/bin/node server.js
+
+[Install]
+WantedBy=multi-user.target

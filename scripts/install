@@ -23,57 +23,61 @@ ynh_abort_if_errors
 app=$YNH_APP_INSTANCE_NAME
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
-redirect_type=$YNH_APP_ARG_REDIRECT_TYPE
-redirect_path=$YNH_APP_ARG_REDIRECT_PATH
 
-# Check domain/path availability
-ynh_webpath_register $app $domain $path_url
-
-# Validate redirect path
-# url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
-# [[ ! $redirect_path =~ $url_regex ]] && ynh_die "Invalid destination: $redirect_path" 1
 
 # Save extra settings
 ynh_app_setting_set $app redirect_type "$redirect_type"
 ynh_app_setting_set $app redirect_path "$redirect_path"
+
+
+#=================================================
+# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
+#=================================================
+ynh_script_progression --message="Validating installation parameters..."
+
+final_path=/var/www/$app
+test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
+
+# Register (book) web path
+ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
+
+
+#=================================================
+# CONFIGURE TOOLPIC BACKEND
+#=================================================
+
+git clone https://github.com/youthforclimatefr/ToolpicBackend $final_path
+
+ynh_replace_string "YNH_LOCATION" "$final_path" ../conf/toolpic-api.service
+ynh_replace_string "YNH_USER" "$app" ../conf/toolpic-api.service
+
+cp ../conf/toolpic-api.service /etc/systemd/system/$app.service
+
+
+# Create a system user
+ynh_system_user_create --username=$app
+
+# Set write access
+chown -R $app: "$final_path"
 
 #=================================================
 # CONFIGURE NGINX
 #=================================================
 
 # Nginx configuration
-for FILE in $(ls ../conf/nginx-*.conf)
-do
-    ynh_replace_string "YNH_LOCATION" "$path_url" $FILE
-done
-if [ "$redirect_type" = "public_302" ];
-then
-    ynh_replace_string "YNH_REDIRECT_PATH" "$redirect_path" ../conf/nginx-visible-302.conf
-    cp ../conf/nginx-visible-302.conf /etc/nginx/conf.d/$domain.d/$app.conf
-elif [ "$redirect_type" = "public_301" ];
-then
-    ynh_replace_string "YNH_REDIRECT_PATH" "$redirect_path" ../conf/nginx-visible-301.conf
-    cp ../conf/nginx-visible-301.conf /etc/nginx/conf.d/$domain.d/$app.conf
-elif [ "$redirect_type" = "public_proxy" ] || [ "$redirect_type" = "private_proxy" ];
-then
-    ynh_replace_string "YNH_REDIRECT_PATH" "$redirect_path" ../conf/nginx-proxy.conf
-    cp ../conf/nginx-proxy.conf /etc/nginx/conf.d/$domain.d/$app.conf
-elif [ "$redirect_type" = "uwsgi" ];
-then
-    sed -i "s@YNH_REDIRECT_PATH@$redirect_path@g" ../conf/nginx-uwsgi.conf
-    sudo cp ../conf/nginx-uwsgi.conf /etc/nginx/conf.d/$domain.d/$app.conf
-fi
+ynh_replace_string "YNH_LOCATION" "$path_url" ../conf/nginx-proxy.conf
+
+cp ../conf/nginx-proxy.conf /etc/nginx/conf.d/$domain.d/$app.conf
+
 
 #=================================================
 # CONFIGURE SSOWAT
 #=================================================
 
 # Make app public if necessary
-if [ "$redirect_type" != "private_proxy" ]
-then
-	# unprotected_uris allows SSO credentials to be passed anyway.
-	ynh_app_setting_set "$app" unprotected_uris "/"
-fi
+ynh_app_setting_set "$app" unprotected_uris "/"
+
+service $app start
 
 # Reload Nginx and regenerate SSOwat conf
 systemctl reload nginx
