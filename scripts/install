@@ -25,11 +25,6 @@ domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
 
 
-# Save extra settings
-ynh_app_setting_set $app redirect_type "$redirect_type"
-ynh_app_setting_set $app redirect_path "$redirect_path"
-
-
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
