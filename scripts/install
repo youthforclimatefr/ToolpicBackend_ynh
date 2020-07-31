@@ -58,6 +58,7 @@ chown -R $app: "$final_path"
 
 ynh_script_progression --message="Installing Node.js dependancies..."
 
+ynh_install_app_dependencies $pkg_dependencies
 
 pushd "$final_path"
     exec_as "$app" npm i
@@ -80,8 +81,10 @@ cp ../conf/nginx-proxy.conf /etc/nginx/conf.d/$domain.d/$app.conf
 # CONFIGURE SSOWAT
 #=================================================
 
-# Make app public if necessary
-ynh_app_setting_set "$app" unprotected_uris "/"
+# Make app public
+ynh_permission_update --permission "main" --add visitors
+
+systemctl daemon-reload
 
 service $app start
 
