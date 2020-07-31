@@ -56,6 +56,9 @@ ynh_system_user_create --username=$app
 # Set write access
 chown -R $app: "$final_path"
 
+ynh_script_progression --message="Installing Node.js dependancies..."
+
+
 pushd "$final_path"
     exec_as "$app" npm i
 popd
@@ -63,6 +66,9 @@ popd
 #=================================================
 # CONFIGURE NGINX
 #=================================================
+
+ynh_script_progression --message="Configurating system..."
+
 
 # Nginx configuration
 ynh_replace_string "YNH_LOCATION" "$path_url" ../conf/nginx-proxy.conf
